@@ -160,6 +160,8 @@ def update_progress(order_id):
             (new_completed, new_status, now, order_id)
         )
 
+        conn.commit()
+
         # 返回更新后的数据
         updated_row = conn.execute(
             "SELECT * FROM work_orders WHERE id = ?", (order_id,)
@@ -303,7 +305,7 @@ def index():
                 <td>${o.completed}</td>
                 <td>
                     <div class="progress-bar-wrap">
-                        <div class="progress-bar" style="width: " + o.progress + "%"></div>
+                        <div class="progress-bar" style="width: ${o.progress}%"></div>
                     </div>
                     <span style="margin-left:6px">${o.progress}%</span>
                 </td>
@@ -322,6 +324,7 @@ def index():
 
         const res = await fetch('/api/orders/' + orderId + '/progress', {
             method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ completed })
         });
         const json = await res.json();
