@@ -70,7 +70,7 @@ def format_order(row):
         "product_name": row["product_name"],
         "quantity": row["quantity"],
         "completed": row["completed"],
-        "progress": calculate_progress(row["quantity"], row["completed"]),
+        "progress": calculate_progress(row["completed"], row["quantity"]),
         "status": row["status"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
@@ -196,9 +196,9 @@ def get_summary():
             summary['total_quantity'] += row['quantity']
             summary['total_completed'] += row['completed']
 
-        if summary['total_orders'] > 0:
+        if summary['total_quantity'] > 0:
             summary['overall_progress'] = round(
-                summary['total_completed'] / summary['total_orders'] * 100, 1
+                summary['total_completed'] / summary['total_quantity'] * 100, 1
             )
 
         return jsonify({"success": True, "data": summary})
