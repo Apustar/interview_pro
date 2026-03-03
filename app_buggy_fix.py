@@ -7,13 +7,12 @@
 from flask import Flask, request, jsonify
 from datetime import datetime
 import sqlite3
-import json
 
 app = Flask(__name__)
 DB_PATH = "workshop.db"
 
 
-# ===================== 数据库初始化 ===================== 
+# ===================== 数据库初始化 =====================
 
 def init_db():
     """初始化数据库，创建工单表"""
@@ -59,6 +58,8 @@ def get_db_connection():
 
 def calculate_progress(completed, quantity):
     """计算完成进度百分比"""
+    if quantity == 0:
+        return 0.0
     return round(completed / quantity * 100, 1)
 
 
@@ -90,7 +91,7 @@ def get_orders():
     try:
         if status_filter:
             rows = conn.execute(
-                f"SELECT * FROM work_orders WHERE status = {status_filter}"
+                "SELECT * FROM work_orders WHERE status = ?", (status_filter,)
             ).fetchall()
         else:
             rows = conn.execute("SELECT * FROM work_orders").fetchall()
@@ -129,10 +130,11 @@ def update_progress(order_id):
       - completed 大于 0 且小于 quantity 时 status 为 'in_progress'
     """
     data = request.get_json()
+    if data is None:
+        return jsonify({"success": False, "error": "请求体格式错误"}), 400
 
     new_completed = data['completed']
-
-    if not isinstance(new_completed, int) or new_completed < 0:
+    if new_completed is None or not isinstance(new_completed, int) or isinstance(new_completed, bool) or new_completed < 0:
         return jsonify({"success": False, "error": "completed 必须为非负整数"}), 400
 
     conn = get_db_connection()
